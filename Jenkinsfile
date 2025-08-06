@@ -6,7 +6,7 @@ pipeline {
     }
   }
   environment {
-    GH_USERNAME = "heschmat"
+    GH_USERNAME = "gesatessa"
     GH_REPO = "jenkins-sonar-argocd-eks"
     DOCKER_IMAGE = "ghcr.io/${GH_USERNAME}/${GH_REPO}:${BUILD_NUMBER}"
     REGISTRY_CREDENTIALS = credentials('GH_PAT')  // Must be GitHub PAT
