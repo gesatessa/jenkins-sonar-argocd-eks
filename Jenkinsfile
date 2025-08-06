@@ -5,14 +5,17 @@ pipeline {
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
+
   environment {
     GH_USERNAME = "gesatessa"
     GH_REPO = "jenkins-sonar-argocd-eks"
     DOCKER_IMAGE = "ghcr.io/${GH_USERNAME}/${GH_REPO}:${BUILD_NUMBER}"
-    REGISTRY_CREDENTIALS = credentials('GH_PAT')
+    REGISTRY_CREDENTIALS = credentials('GH_PAT')  // GitHub Personal Access Token
     SONAR_URL = "http://44.200.107.11:9000"
   }
+
   stages {
+
     stage('Checkout') {
       steps {
         git branch: 'main', url: "https://github.com/${GH_USERNAME}/${GH_REPO}.git"
@@ -35,12 +38,11 @@ pipeline {
 
     stage('Docker Build and Push') {
       steps {
-        withCredentials([string(credentialsId: 'GH_PAT', variable: 'GITHUB_TOKEN')]) {
-          sh '''
-            echo $GITHUB_TOKEN | docker login ghcr.io -u ${GH_USERNAME} --password-stdin
-            docker build -t ${DOCKER_IMAGE} .
-            docker push ${DOCKER_IMAGE}
-          '''
+        script {
+          def dockerImage = docker.build("${DOCKER_IMAGE}")
+          docker.withRegistry('https://ghcr.io', 'GH_PAT') {
+            dockerImage.push()
+          }
         }
       }
     }
@@ -49,15 +51,21 @@ pipeline {
       steps {
         withCredentials([string(credentialsId: 'GH_PAT', variable: 'GITHUB_TOKEN')]) {
           sh '''
-            git config user.name "$GH_USERNAME"
+            rm -rf temp-deployment
+            git clone https://${GITHUB_TOKEN}@github.com/${GH_USERNAME}/${GH_REPO}.git temp-deployment
+            cd temp-deployment
+
+            git config user.name "${GH_USERNAME}"
             git config user.email "info@me.com"
+
             sed -i "s/replaceImageTag/$BUILD_NUMBER/g" k8s/app.yml
             git add k8s/app.yml
             git commit -m "Update image tag to $BUILD_NUMBER"
-            git push https://${GITHUB_TOKEN}@github.com/$GH_USERNAME/$GH_REPO HEAD:main
+            git push origin main
           '''
         }
       }
     }
+
   }
 }
