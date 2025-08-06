@@ -9,7 +9,7 @@ pipeline {
     GH_USERNAME = "gesatessa"
     GH_REPO = "jenkins-sonar-argocd-eks"
     DOCKER_IMAGE = "ghcr.io/${GH_USERNAME}/${GH_REPO}:${BUILD_NUMBER}"
-    REGISTRY_CREDENTIALS = credentials('GH_PAT')  // Must be GitHub PAT
+    REGISTRY_CREDENTIALS = credentials('GH_PAT')
     SONAR_URL = "http://44.200.107.11:9000"
   }
   stages {
@@ -35,11 +35,12 @@ pipeline {
 
     stage('Docker Build and Push') {
       steps {
-        script {
-          def dockerImage = docker.build("${DOCKER_IMAGE}")
-          docker.withRegistry('https://ghcr.io', 'GH_PAT') {
-            dockerImage.push()
-          }
+        withCredentials([string(credentialsId: 'GH_PAT', variable: 'GITHUB_TOKEN')]) {
+          sh '''
+            echo $GITHUB_TOKEN | docker login ghcr.io -u ${GH_USERNAME} --password-stdin
+            docker build -t ${DOCKER_IMAGE} .
+            docker push ${DOCKER_IMAGE}
+          '''
         }
       }
     }
