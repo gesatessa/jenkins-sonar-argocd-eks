@@ -5,7 +5,8 @@ pipeline {
       // Mount Docker socket for Docker commands inside container
       // Mount Jenkins workspace directory to same path inside container to persist repo and files between stages
       // Set working directory inside container to workspace, so all commands run in the checked-out repo folder
-      args '--user root -v /var/run/docker.sock:/var/run/docker.sock -v $WORKSPACE:$WORKSPACE -w $WORKSPACE'
+      #args '--user root -v /var/run/docker.sock:/var/run/docker.sock -v $WORKSPACE:$WORKSPACE -w $WORKSPACE'
+      args '--user root -v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
   environment {
