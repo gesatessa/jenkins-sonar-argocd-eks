@@ -51,7 +51,7 @@ pipeline {
           sh '''
             git config user.name "$GH_USERNAME"
             git config user.email "info@me.com"
-            sed -i "s|\(image: ghcr.io/.*/.*:\).*|\1${BUILD_NUMBER}|" k8s/app.yml
+            sed -i 's|\\(image: ghcr.io/.*/.*:\\).*|\\1${BUILD_NUMBER}|' k8s/app.yml
             git add k8s/app.yml
             git commit -m "Update image tag to $BUILD_NUMBER"
             git push https://${GITHUB_TOKEN}@github.com/$GH_USERNAME/$GH_REPO HEAD:main
