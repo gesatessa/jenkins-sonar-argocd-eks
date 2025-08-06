@@ -10,7 +10,7 @@ pipeline {
     GH_REPO = "jenkins-sonar-argocd-eks"
     DOCKER_IMAGE = "ghcr.io/${GH_USERNAME}/${GH_REPO}:${BUILD_NUMBER}"
     REGISTRY_CREDENTIALS = credentials('GH_PAT')  // Must be GitHub PAT
-    SONAR_URL = "http://3.237.36.54:9000"
+    SONAR_URL = "http://44.200.107.11:9000"
   }
   stages {
     stage('Checkout') {
